@@ -1,0 +1,77 @@
+
+<ion-view view-title="Reporte de Ventas " name="" ng-init="ListaReporteVentas();">
+  <ion-content >
+      <div class="list card">
+
+  <div class="item item-avatar">
+    <img src="img/photo.jpg">
+    <h2>Reporte de Ventas por Vendedor</h2>
+    <p>{{fechaNow}}</p>
+
+  </div>
+
+  <div class="item item-body" >
+  <label class="item item-input item-select" >
+    <div class="input-label" >
+      <p style="font:menu; font-size:13px;">Supervisor</p>
+    </div>
+    <select  ng-model="usuSuper[0].cosupe">
+      
+      <option  ng-repeat="sup in ListaSuper">{{sup.CO_USUA}}</option>
+    
+    </select>
+
+    </label>
+  <label class="item item-input">
+  <span class="input-label" style="font-size:11px;">Desde</span>
+  <input style="font-size:11px;" id="txtDesde1re"   type="date" >
+  
+</label>
+ <label class="item item-input">
+  <span class="input-label" style="font-size:11px;">Hasta</span>
+  <input style="font-size:11px;" id="txtHasta1re"   type="date" >
+  
+</label>
+
+
+   <div class="row">
+  <div class="col"  ng-repeat="ch in checkeds"><label class="checkbox">
+       <input type="checkbox" ng-model="ch.check" ng-checked="ch.check">
+     </label> <n style="font-size:12px;">{{ch.score}}</n></div>
+    
+</div>
+     <a class="item item-icon-left positive"  ng-click="ListaReporteVentas()">
+    <i class="icon ion-refresh"></i>
+    Presione para actualizar. 
+  </a>  
+  </div>
+
+</div>
+<div id="divCargandoPQre" style="text-align:center;padding-top:40px;display:none;">
+    <ion-spinner icon="android" ></ion-spinner>
+    <ion-list>
+     <br>
+  </div>
+  
+ <label class="item item-input">
+    <i class="icon ion-search placeholder-icon"></i>
+    <input type="text" ng-model="searchText" placeholder="Busqueda. .">
+  </label>
+    <div class="row header headerS">
+          <div class="col">Producto</div>
+          <div class="col">Precio</div>
+          <div class="col">#Facturado</div>
+          <div class="col">#Sin Facturar</div>
+          <div class="col">Total</div>
+        </div>
+        <div class="row" id="" style="" ng-repeat="data in ListaReport | filter:searchText">
+          <div class="col colS">{{data.producto}}</div>
+          <div class="col colS">{{data.Precio}}</div>
+          <div class="col colS">{{data.Facturado}}</div>
+          <div class="col colS">{{data.sinFacturar}}</div>
+          <div class="col colS">{{data.Total}}</div>
+          
+        </div>
+
+    </ion-content>
+</ion-view>
