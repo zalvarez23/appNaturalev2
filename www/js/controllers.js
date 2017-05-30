@@ -1523,7 +1523,9 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
 
 
 })
-.controller('menuCtrl',function($scope,$timeout,$ionicPopup){
+
+// NEW SISTEMA
+.controller('menuCtrl',function($scope,$timeout,$ionicPopup,$state,popupServices){
   var dataUser = JSON.parse(localStorage.getItem('dataUserN'));  
   $scope.nameUser = dataUser[0].nombres;
     $scope.showLoader = true;
@@ -1536,6 +1538,37 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
         template : template
       })
       return confirmPopup;
-    }    
-});
+    }
+    $scope.gotoActivites = function(){
+      $state.go('master.actividades');
+    }
+    $scope.cerrarSesion = function(){
+      var confirm = popupServices.confirmPop('Confirmación', 'Esta apunto de cerrar sesión , desea continuar ?')
+      confirm.then(function(res){
+        if (res) {
+          confirm.close();
+          var loader = popupServices.loaderPop('Cerrando Sesión');
+          $timeout(function(){
+            $state.go('login');         
+            loader.close();                           
+          },1200)
+        }
+      })
+    }
+})
 
+.controller("actividadesCtrl",function($scope,$http){ 
+  $scope.showListMovilOt = true;
+  var params = {
+    filter : '3',
+    fecha : '2016-04-10'
+  }
+  $http({url : urlNaturale +  'LitaActividadesDevoluciones',
+        method: 'GET',
+        params: params
+       }).success(function(data){
+          $scope.listActividades = data;
+        
+       })
+  
+})

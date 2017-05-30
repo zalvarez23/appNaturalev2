@@ -5,7 +5,11 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic','ngCordova', 'starter.controllers', 'starter.services', 'firebase'])
+angular.module('starter', ['ionic','ngCordova', 'starter.controllers', 'starter.services', 'firebase',
+
+  'starter.gpsServices',
+  'starter.ServicesPhoto',
+  'starter.popupServices'])
 
 
 .config(function($stateProvider, $urlRouterProvider,$ionicConfigProvider) {
@@ -112,6 +116,17 @@ $ionicConfigProvider.tabs.position('bottom');
       }
     }
   }) 
+
+  .state('master.actividades',{
+    url : '/actividades',
+    cache : false,
+    views: {
+      'viewComercial':{
+        templateUrl: 'templates/NewSis/listaActividades.html',
+        controller: 'actividadesCtrl'
+      }
+    }
+  })   
  
 
  .state('tab.lista-detail', {
