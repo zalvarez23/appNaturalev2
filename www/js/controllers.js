@@ -624,8 +624,7 @@ $http({url: urlNaturale + 'SaveCabPedido',
    var params = {
                 idLocal: idTienda
                 //idTienda
-            }
-            console.log(params)
+            }            
 // FUNCION HTTPS PARA LOGEAR RUTAS POST . .
 $http({url: urlNaturale + 'ListaEquipos',
 //$http({url: urlNaturale + 'ListaEquipos',
@@ -633,7 +632,7 @@ $http({url: urlNaturale + 'ListaEquipos',
         method: 'GET',
         params: params
        }).success(function(data){
-        console.log(data)
+        
         $scope.listaEquipos = data;
           
        })
@@ -670,7 +669,7 @@ $scope.canales=[];
                 tomofoto: 'NO'       
               }
 // FUNCION HTTPS PARA LOGEAR RUTAS POST . .
-console.log(params)
+
 $http({url: urlNaturale + 'ListaRutas',
         method: 'GET',
         params: params
@@ -985,7 +984,7 @@ $http({url: urlNaturale + 'ListaDePedidosRealizados',
         method: 'GET',
         params: params
        }).success(function(data){
-        console.log(data)
+        
       $scope.listaHistorialPedidos= data; 
          cargandoH.style.display='none';
     }).error(function(){
@@ -1557,18 +1556,165 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     }
 })
 
-.controller("actividadesCtrl",function($scope,$http){ 
-  $scope.showListMovilOt = true;
-  var params = {
-    filter : '3',
+.controller("actividadesCtrl",function($scope,$http,$timeout,$ionicActionSheet,popupServices,$state){
+  $scope.actividadMult = false;
+  var listActividadesInit = [];  
+  $scope.paramsMult = {
+    activate : false,
+    css : '#fff'
+  }
+  $scope.showLoaderActi = true;
+  var txtFecha = "";
+  $scope.params = {
+    filter : '',
     fecha : '2016-04-10'
   }
-  $http({url : urlNaturale +  'LitaActividadesDevoluciones',
-        method: 'GET',
-        params: params
-       }).success(function(data){
-          $scope.listActividades = data;
+  $scope.initView = function(){
+    $timeout(function(){
+      txtFecha = document.getElementById('txtFecha');
+      txtFecha.value = popupServices.getDateHoyF();
+      $scope.getActividades(2);
+    },100)
+    
+  }
+  $scope.getActividades = function(tip){    
+    if (tip == 1) {
+      $scope.showLoaderActi = true;
+    }
+    //$scope.params.fecha = txtFecha.value;
+    
+    $http({url : urlNaturale +  'LitaActividadesDevoluciones',
+          method: 'GET',
+          params: $scope.params
+         }).success(function(data){
+            $scope.listActividades = data;            
+            $timeout(function(){              
+              $scope.showLoaderActi = false;              
+              $scope.$broadcast('scroll.refreshComplete');
+            },1)                        
+          
+         })    
+  }
+  $scope.goHome = function(){
+    $state.go("master.menu");
+  }
+  $scope.goMultiple = function(){
+    if (!$scope.paramsMult.activate) {
+      $scope.paramsMult.activate = true;
+      $scope.paramsMult.css = "#FF5722";      
+    }else{
+      $scope.paramsMult.activate = false;
+      $scope.paramsMult.css = "#FFF";
+      listActividadesInit = [];
+      $scope.listActividades.forEach(function(item,index){
+        item.fondo = "";
+      });
+    }
+  }
+  $scope.showOptions = function(item,multiple) {   
+     // Show the action sheet
+     if (multiple) {
+      var index = $scope.listActividades.indexOf(item);
+      if ($scope.listActividades[index].fondo.length == 0) {
+        $scope.listActividades[index].fondo = "background-color: #e4cfcf !important";
+        listActividadesInit.push(item.nu_regi)
+        console.log(listActividadesInit)
+      }else{
+        var indexReg = listActividadesInit.indexOf(item.nu_regi);
+        listActividadesInit.splice(indexReg,1);
+        $scope.listActividades[index].fondo = "";
+        console.log(listActividadesInit)
+      }
+      return;
+     }
+     var textOps = item.st_desp == "successAct" ? "Ver Actividad" : "Iniciar Actividad";
+     var hideSheet = $ionicActionSheet.show({
+       buttons: [
+         { text: '<b>' + textOps + '</b>' },        
+       ],       
+       titleText: 'Opciones',
+       cancelText: 'Cancel',
+       cancel: function() {
+            // add cancel code..
+          },
+       buttonClicked: function(index) {
+        if (item.st_desp == "successAct") {
+              $state.go('master.desActividades', { tip : 2});
+              return;
+        }else{
+          $scope.initActivities(item);
+          return false;
+        }
+       }
+     });     
+     $timeout(function() {
+       hideSheet();
+     }, 2000);
+   };
+   $scope.initMultipleAct = function(){
+    popupServices.confirmPop('Confirmación !' , 'Esta apunto de iniciar multiples actividades , desear continuar ?').then(function(res){
+      if (res) {
+        var loaPop = popupServices.loaderPop('Iniciando Actividades');
+        var idRegis= "";
+        for (var i = 0; i < listActividadesInit.length; i++) {
+          idRegis += listActividadesInit[i] + ",";          
+        }
+         idRegis = idRegis.substring(0,idRegis.length-1);
+        var params = {nu_regi : idRegis, st_desp : 'Iniciado'}
+        $http({url : urlNaturale +  'UpdateStActividadesDevo',
+         method: 'GET',
+         params: params
+        }).success(function(data){              
+           $timeout(function(){
+             loaPop.close();
+             var pop = popupServices.alertPop('Correcto !','Actividades Iniciadas correctamente !');                      
+             pop.then(function(res){
+                $scope.goMultiple();
+                $scope.getActividades(1);
+             })
+           },1000)
+         })
+        .error(function(){
+          loaPop.close();
+          var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+        })
         
-       })
+      }
+    })
+   }
+   $scope.initActivities = function(item){
+      popupServices.confirmPop('Confirmación !' , 'Esta apunto de iniciar esta actividad , desear continuar ?').then(function(res){
+        if (res) {
+          var params = {nu_regi : item.nu_regi, st_desp : 'Iniciado'}
+           var loaPop = popupServices.loaderPop('Iniciando Actividad');
+           $http({url : urlNaturale +  'UpdateStActividadesDevo',
+            method: 'GET',
+            params: params
+           }).success(function(data){              
+              $timeout(function(){
+                loaPop.close();
+                $state.go('master.desActividades',{tip : 1});
+              },1000)
+           })
+           .error(function(err){
+              loaPop.close();
+              var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+           })
+        }
+      })      
+   }
   
+})
+.controller("desActividadCtrl",function($scope,$http,$timeout,$ionicActionSheet,popupServices,$state){ 
+  $scope.showLoaderActi = true;
+  $scope.initView = function(){
+    $timeout(function(){
+      $scope.showLoaderActi = false;
+    },1000)
+  }
+  $scope.getActividades = function(tip){    
+    if (tip == 1) {
+      $scope.showLoaderActi = true;
+    }
+  }
 })

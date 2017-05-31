@@ -1,18 +1,9 @@
-<ion-view title="Lista de Actividades" ng-init="initView()">
+<ion-view title="Actividad" ng-init="initView()">
     <ion-nav-buttons side="right" >
         <md-button class="md-icon-button ion-nav-button-right headBtnHome" ng-click="goHome()"
                    aria-label="Setting">
             <i class="ion-home" style=""></i>
         </md-button>
-        <md-button class="md-icon-button ion-nav-button-right headBtnHome" style="    padding-left: 10px;" ng-click="goMultiple()"
-                   aria-label="Setting">
-            <i class="ion-plus-circled" style="    font-size: 27px !important;
-    color: {{paramsMult.css}};" ></i>
-        </md-button>
-        <md-button ng-if="paramsMult.activate" class="md-icon-button ion-nav-button-right headBtnHome" style="    padding-left: 10px;" ng-click="initMultipleAct()"
-                   aria-label="Setting">
-            <i class="ion-ios-download" style="font-size: 30px !important;" ></i>
-        </md-button>                
     </ion-nav-buttons>
     <ion-content padding="true" class="has-header">
         <div class='styleLoader' ng-show="showLoaderActi">
@@ -42,23 +33,15 @@
     </div>
     <ion-refresher  on-refresh="getActividades();">
     </ion-refresher>
-    <label class="item-input" ng-show="!showLoaderActi" style="margin-top: -13px;">
+    <label class="item-input" ng-show="!showLoaderActi">
       <i class="icon ion-calendar placeholder-icon"></i>
       <input type="date" id="txtFecha" class="borderBottom"  placeholder="Buscado general . . ">
     </label>        
-	  <div class="item-input" ng-show="!showLoaderActi" style="margin-top: -13px;">	    
+	  <div class="item-input" ng-show="!showLoaderActi">	    
 	    <input type="text" class="borderBottom" ng-model="params.filter" placeholder="Buscado general . . ">
       <i class="icon  placeholder-icon"></i>
       <a class="button button-icon icon ion-ios-search positive" ng-click="getActividades(1);"></a>
-	  </div> 
-      <div ng-repeat="item in listActividades  | filter : search"  class="list card cardKevin {{item.st_desp}}" ng-show="!showLoaderActi">
-        <div class="item item-icon-right " ng-click="showOptions(item,paramsMult.activate)" style="{{item.fondo}}">
-         <i class="icon ion-ios-arrow-right"></i>
-          <h2>Serie : {{item.Serie}}</h2>
-          <p>Razon Social : {{item.rs}}</p>
-          <p>Fecha : {{item.fecha}}</p>          
-        </div>
-      </div>
+	  </div>
   </div>
   <ion-infinite-scroll on-infinite="getMoreClientes()" ng-if="hasMoreData" distance="0%">
   </ion-infinite-scroll>

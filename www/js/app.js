@@ -128,6 +128,17 @@ $ionicConfigProvider.tabs.position('bottom');
     }
   })   
  
+  .state('master.desActividades',{
+    url : '/actividades/:tip',
+    cache : false,
+    views: {
+      'viewComercial':{
+        templateUrl: 'templates/NewSis/Actividad.html',
+        controller: 'desActividadCtrl'
+      }
+    }
+  })   
+ 
 
  .state('tab.lista-detail', {
       url: '/listaDetail/:pedId',

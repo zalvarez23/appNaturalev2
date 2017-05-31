@@ -259,6 +259,7 @@ blockquote {
 
 .cardKevin{
   border-left: 3px solid #387ef5;
+  margin-top: 0px;
 }
   .cardKevin div i{
      font-size:24px !important;
@@ -641,4 +642,7 @@ font-weight: bold;
     height: 32px;
     font-size: 22px;
     padding-top: 8px;
+}
+.successAct{
+   border-left: 4px solid #4CAF50;
 }
