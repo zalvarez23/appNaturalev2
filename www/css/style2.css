@@ -271,6 +271,7 @@ blockquote {
     font-weight: 600 !important;
     color: #567ba2 !important;
     letter-spacing: 0.1em;
+    white-space: normal;
   }
     .cardKevin p{
       width: 115%;
@@ -559,6 +560,7 @@ font-weight: bold;
 }
 .rowButtonSt{
   border-bottom: 1px solid rgba(229, 229, 229, 0.7);
+  border-top: 1px solid rgba(229, 229, 229, 0.7);
   margin-top: -10px;
       padding-bottom: 1px;
 }
@@ -645,4 +647,17 @@ font-weight: bold;
 }
 .successAct{
    border-left: 4px solid #4CAF50;
+}
+.styleCheck{
+  margin-bottom: -2px;
+    margin-top: -10px;
+}
+.styleCheck .item-checkbox{
+  border : none !important;
+  padding-bottom: 80px !important;
+  padding-left: 20px;
+}
+.styleCheck label{
+  font-size : 13px;
+  font-family: GillSans, Calibri, Trebuchet, sans-serif;
 }

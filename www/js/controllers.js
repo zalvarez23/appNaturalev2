@@ -1,7 +1,9 @@
 
 // VARIABLE RUTA
 //var urlNaturale = "http://200.110.43.43/ContentServicesNaturale.asmx/";
-var urlNaturale = "http://192.168.0.17:8056/ContentServicesNaturale.asmx/";
+//var urlNaturale = "http://192.168.0.17:8056/ContentServicesNaturale.asmx/";
+var urlNaturale = "http://192.168.0.8:8098/ContentServicesNaturale.asmx/";
+
 //
 function getDateNow(){
   var meses = new Array ("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
@@ -1618,11 +1620,10 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
       if ($scope.listActividades[index].fondo.length == 0) {
         $scope.listActividades[index].fondo = "background-color: #e4cfcf !important";
         listActividadesInit.push(item.nu_regi)
-        console.log(listActividadesInit)
       }else{
         var indexReg = listActividadesInit.indexOf(item.nu_regi);
         listActividadesInit.splice(indexReg,1);
-        $scope.listActividades[index].fondo = "";
+        $scope.listActividades[index].fondo = "";        
         console.log(listActividadesInit)
       }
       return;
@@ -1639,6 +1640,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           },
        buttonClicked: function(index) {
         if (item.st_desp == "successAct") {
+              localStorage.setItem('dataActividad',JSON.stringify(item));
               $state.go('master.desActividades', { tip : 2});
               return;
         }else{
@@ -1692,6 +1694,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
             params: params
            }).success(function(data){              
               $timeout(function(){
+                localStorage.setItem('dataActividad',JSON.stringify(item));
                 loaPop.close();
                 $state.go('master.desActividades',{tip : 1});
               },1000)
@@ -1707,14 +1710,39 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
 })
 .controller("desActividadCtrl",function($scope,$http,$timeout,$ionicActionSheet,popupServices,$state){ 
   $scope.showLoaderActi = true;
+  
+  var dataActi = JSON.parse(localStorage.getItem('dataActividad'));
+  console.log(dataActi);
+  $scope.listCheckBox = [
+    {id : 0, check : true, des : 'Dev'},
+    {id : 1, check : false, des : 'Quie'},
+    {id : 2, check : false, des : 'Aux'},
+  ]
+  $scope.goHome = function(){
+    $state.go("master.menu");
+  }
   $scope.initView = function(){
+    $scope.getProducActi();
     $timeout(function(){
       $scope.showLoaderActi = false;
-    },1000)
+    },100)
   }
   $scope.getActividades = function(tip){    
     if (tip == 1) {
       $scope.showLoaderActi = true;
     }
+  }
+  $scope.getProducActi = function(){
+    var params = {id_fact : dataActi.indice};
+    $http({url : urlNaturale +  'ListaProductosActi',
+     method: 'GET',
+     params: params
+    }).success(function(data){              
+      $scope.listProductos = data;
+      console.log(data)
+    })
+    .error(function(err){
+       var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+    })    
   }
 })

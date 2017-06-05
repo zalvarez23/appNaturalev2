@@ -10,38 +10,40 @@
        <ion-spinner icon='android' class='loadingok'>
        </ion-spinner>
     </div> 
-    <div>
-    <div class="row rowButtonSt" ng-show="ok">
-      <div class="col">
-        <a class="item item-icon-left positive buttonSt" ng-click="changeView('master.home-clientesABC',1);">
-          <i class="icon ion-ios-personadd"></i>
-           Cliente
-        </a>       
-      </div>
-      <div class="col">
-        <a class="item item-icon-left positive buttonSt" ng-click="gotoPedido();">
-          <i class="icon ion-compose"></i>
-           Pedido
-        </a>       
-      </div>
-      <div class="col">
-        <a class="item item-icon-left positive buttonSt" ng-click="openModalConsultas();">
-          <i class="icon ion-card"></i>
-           &nbsp;Cre.
-        </a>       
+    <div ng-show="!showLoaderActi">
+      <div ng-repeat="item in listProductos"  class="list card cardKevin {{item.st_desp}}" ng-show="!showLoaderActi">
+        <div class="item item-icon-right " ng-click="showOptions(item,paramsMult.activate)" style="{{item.fondo}}">
+         <i class="icon ion-ios-arrow-right"></i>
+          <h2>Producto : {{item.PRODUCTO}}</h2>
+          <p>Cantidad : {{item.CANTIDAD}}</p>      
+        </div>
+      </div>      
+	  <div class="item-input" >	    
+	    <input type="text" class="borderBottom" ng-model="params.filter" placeholder="Observación . . ">
+      <i class="icon  placeholder-icon"></i>
+      <a class="button button-icon icon ion-chatbubble-working positive"></a>
+	  </div>
+    <div class="row">
+      <div class="col styleCheck" ng-repeat= "item in listCheckBox">
+        <ion-checkbox ng-model="item.check">{{item.des}}</ion-checkbox>
       </div>
     </div>
-    <ion-refresher  on-refresh="getActividades();">
-    </ion-refresher>
-    <label class="item-input" ng-show="!showLoaderActi">
-      <i class="icon ion-calendar placeholder-icon"></i>
-      <input type="date" id="txtFecha" class="borderBottom"  placeholder="Buscado general . . ">
-    </label>        
-	  <div class="item-input" ng-show="!showLoaderActi">	    
-	    <input type="text" class="borderBottom" ng-model="params.filter" placeholder="Buscado general . . ">
-      <i class="icon  placeholder-icon"></i>
-      <a class="button button-icon icon ion-ios-search positive" ng-click="getActividades(1);"></a>
-	  </div>
+    <div class="row rowButtonSt">
+      <div class="col">
+        <a class="item item-icon-left positive buttonSt">
+          <i class="icon ion-social-instagram-outline"></i>
+           Tomar Foto
+        </a>       
+      </div>
+    </div> 
+    <div class="row rowButtonSt">
+      <div class="col">
+        <a class="item item-icon-left positive buttonSt">
+          <i class="icon ion-ios-checkmark-outline"></i>
+           Finalizar Actividad
+        </a>       
+      </div>
+    </div>            
   </div>
   <ion-infinite-scroll on-infinite="getMoreClientes()" ng-if="hasMoreData" distance="0%">
   </ion-infinite-scroll>
