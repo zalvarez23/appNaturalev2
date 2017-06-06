@@ -33,14 +33,14 @@ angular.module('starter.ServicesPhoto', [])
 		Result.savePhotoFolder = function(file,name){
 			var uri = file;
 	        var namephoto= name ;
-	        var targetPath = cordova.file.externalRootDirectory + 'APPFACTURAPHOTO/' + namephoto;
+	        var targetPath = cordova.file.externalRootDirectory + 'PHOTOPROCA/' + namephoto;
 	        var trustHosts = true
 	        var options = {};
 	        var q= $q.defer();	        
 	        $cordovaFileTransfer.download(uri, targetPath, options, trustHosts)
-	            .then(function(result) {	  
+	            .then(function(result) {	  	            	
 	            	q.resolve(result)
-	            }, function(error) {	            	
+	            }, function(error) {	            		            	
 	              	q.reject(error)
 	            }, function (progress) {
 	               // $timeout(function () {
@@ -53,7 +53,7 @@ angular.module('starter.ServicesPhoto', [])
 		Result.deletePhotoFolder = function(name){
 			
 			var q = $q.defer();
-			 $cordovaFile.removeFile(cordova.file.externalRootDirectory + 'APPFACTURAPHOTO/', name)
+			 $cordovaFile.removeFile(cordova.file.externalRootDirectory + 'PHOTOPROCA/', name)
 			 .then(function (success) {
 		        q.resolve(success)
 		     }, function (error) {
@@ -64,16 +64,14 @@ angular.module('starter.ServicesPhoto', [])
 
 		Result.transferPhoto = function(url,namePhoto,filePath){
 			var q = $q.defer();
-			var server = url + '/UploadPhoto?nameFile=' + namePhoto;
-			alert(server)			
+			var server = url + '/UploadPhoto?nameFile=' + namePhoto;			
 			var options = {
 				fileKey: "file",
 	            fileName: namePhoto,
 	            chunkedMode: false,
 	            mimeType: "image/jpg"
 	        };	        	        
-	        $cordovaFileTransfer.upload(server, filePath, options).then(function(result) {	
-	        alert(JSON.stringify(result))        	
+	        $cordovaFileTransfer.upload(server, filePath, options).then(function(result) {		        
 	        	q.resolve(result)
 	        },function(err){	        	
 	        	

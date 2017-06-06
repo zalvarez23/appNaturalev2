@@ -2,16 +2,51 @@
 // VARIABLE RUTA
 //var urlNaturale = "http://200.110.43.43/ContentServicesNaturale.asmx/";
 //var urlNaturale = "http://192.168.0.17:8056/ContentServicesNaturale.asmx/";
-var urlNaturale = "http://192.168.0.8:8098/ContentServicesNaturale.asmx/";
+var urlNaturale = "http://192.168.0.12:8056/ContentServicesNaturale.asmx/";
 
 //
+  var getDateHoyCod = function(){
+    var hoy = new Date();
+    var dd = hoy.getDate();
+    var mm = hoy.getMonth()+1;
+    var yyyy = hoy.getFullYear();
+    var hour = hoy.getHours();
+    var minuts = hoy.getMinutes();
+    var second = hoy.getSeconds();
+    if(dd<10) {
+        dd='0'+dd
+    } 
+
+    if(mm<10) {
+        mm='0'+mm
+    } 
+      hoy = yyyy+''+mm+''+dd + '' + hour + '' + minuts + '' + second;
+      return hoy;  
+  } 
 function getDateNow(){
   var meses = new Array ("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
 var diasSemana = new Array("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado");
 var f=new Date();
 return diasSemana[f.getDay()] + ", " + f.getDate() + " de " + meses[f.getMonth()] + " de " + f.getFullYear();
 }
+  var getDateHoraHoyCod = function(){
+    var hoy = new Date();
+    var dd = hoy.getDate();
+    var mm = hoy.getMonth()+1;
+    var yyyy = hoy.getFullYear();
+    var hour = hoy.getHours();
+    var minuts = hoy.getMinutes();
+    var second = hoy.getSeconds();
+    if(dd<10) {
+        dd='0'+dd
+    } 
 
+    if(mm<10) {
+        mm='0'+mm
+    } 
+      hoy = yyyy+'-'+mm+'-'+dd + ' ' + hour + ':' + minuts + ':' + second;
+      return hoy;  
+  } 
 function getDateHoy(){
   var hoy = new Date();
 var dd = hoy.getDate();
@@ -860,11 +895,23 @@ $scope.listaRecordUsuarios();
 
 })
 
-.controller('loginCtrl', function($scope, $http,$ionicLoading,$location,Chats,$firebaseArray,$firebaseObject,$state){
+.controller('loginCtrl', function($scope,gpsServices,$http,$rootScope,$cordovaDevice,$cordovaBatteryStatus,$ionicPlatform,$ionicLoading,$location,Chats,$firebaseArray,$firebaseObject,$state){
+  document.addEventListener("deviceready",function(){    
+    $ionicPlatform.ready(function() {
+      $rootScope.$on("$cordovaBatteryStatus:status", function(event, args) {
+          if(args.isPlugged) {              
+              gpsServices.saveBatteryDevice(args.level)                
+            } else {                
+              gpsServices.saveBatteryDevice(args.level)          
+          }
+      });    
+      var device = $cordovaDevice.getDevice();
+      gpsServices.saveDevInformation(device);
+    });
+  })
 
+  var ref = new Firebase('https://appchatalvarez.firebaseio.com/');
 
-    var ref = new Firebase('https://appchatalvarez.firebaseio.com/');
-     
  // create a synchronized array
   // click on `index.html` above to see it used in the DOM!
   $scope.nroserie=0;
@@ -916,7 +963,6 @@ $http({url: urlNaturale + 'InicioSesion',
         method: 'GET',
         params: params
        }).success(function(data){
-
 if (data=='"error"') {
   alert('Usuario y/o Password Incorrectos .');
   $ionicLoading.hide();
@@ -933,8 +979,12 @@ else
    }else if(data[0].tipo == "PRUE"){    
      usuario=data[0].nombres;
      usunick=data[0].usuario;
+     localStorage.setItem('userMich',JSON.stringify(
+      {usuario : usuario,co_usua : usunick}
+      ))
     $ionicLoading.hide();
-    localStorage.setItem('dataUserN',JSON.stringify(data));
+    gpsServices.saveSegTecn(urlNaturale,0,'login');
+    localStorage.setItem('dataUserN',JSON.stringify(data));    
      $state.go("master.menu");
    }else{
       usuario=data[0].nombres;
@@ -1526,7 +1576,8 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
 })
 
 // NEW SISTEMA
-.controller('menuCtrl',function($scope,$timeout,$ionicPopup,$state,popupServices){
+.controller('menuCtrl',function($scope,$timeout,$ionicPopup,$state,popupServices,$rootScope,$cordovaBatteryStatus,$ionicPlatform,gpsServices){
+
   var dataUser = JSON.parse(localStorage.getItem('dataUserN'));  
   $scope.nameUser = dataUser[0].nombres;
     $scope.showLoader = true;
@@ -1569,7 +1620,9 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
   var txtFecha = "";
   $scope.params = {
     filter : '',
-    fecha : '2016-04-10'
+    fecha : '2016-04-10',
+    //co_usua : usunick,
+    co_usua : 'TS1'
   }
   $scope.initView = function(){
     $timeout(function(){
@@ -1616,6 +1669,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
   $scope.showOptions = function(item,multiple) {   
      // Show the action sheet
      if (multiple) {
+      if (item.st_desp == "successAct") { return ;};
       var index = $scope.listActividades.indexOf(item);
       if ($scope.listActividades[index].fondo.length == 0) {
         $scope.listActividades[index].fondo = "background-color: #e4cfcf !important";
@@ -1640,10 +1694,12 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           },
        buttonClicked: function(index) {
         if (item.st_desp == "successAct") {
+              gpsServices.saveSegTecn(urlNaturale,item.nu_regi,'Ver Actividad');
               localStorage.setItem('dataActividad',JSON.stringify(item));
               $state.go('master.desActividades', { tip : 2});
               return;
         }else{
+          gpsServices.saveSegTecn(urlNaturale,item.nu_regi,'InicioActividad');
           $scope.initActivities(item);
           return false;
         }
@@ -1658,11 +1714,18 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
       if (res) {
         var loaPop = popupServices.loaderPop('Iniciando Actividades');
         var idRegis= "";
-        for (var i = 0; i < listActividadesInit.length; i++) {
+        for (var i = 0; i < listActividadesInit.length; i++) {          
+          gpsServices.saveSegTecn(urlNaturale,listActividadesInit[i],'Ver Actividad');
           idRegis += listActividadesInit[i] + ",";          
         }
          idRegis = idRegis.substring(0,idRegis.length-1);
-        var params = {nu_regi : idRegis, st_desp : 'Iniciado', co_usua : usunick, ubic : ''}
+        var params = {
+          nu_regi : idRegis,
+          st_desp : 'Iniciado',
+          //co_usua : usunick,
+          co_usua : "TS1",
+          ubic : ''
+        }
         $http({url : urlNaturale +  'UpdateStActividadesDevo',
          method: 'GET',
          params: params
@@ -1688,7 +1751,13 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
       popupServices.confirmPop('Confirmación !' , 'Esta apunto de iniciar esta actividad , desear continuar ?').then(function(res){
         if (res) {
           gpsServices.getCurrentPosition().then(function(resu){
-            var params = {nu_regi : item.nu_regi, st_desp : 'Iniciado', co_usua : "TS1", ubic : resu.lat + '|' + resu.lon}
+            var params = {
+              nu_regi : item.nu_regi,
+              st_desp : 'Iniciado',
+              co_usua : "TS1",
+              //co_usua : usunick,
+              ubic : resu.lat + '|' + resu.lon
+            }
 
              var loaPop = popupServices.loaderPop('Iniciando Actividad');
              $http({url : urlNaturale +  'UpdateStActividadesDevo',
@@ -1712,7 +1781,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
    }
   
 })
-.controller("desActividadCtrl",function($scope,$state,$http,ServicesPhoto,gpsServices,$timeout,$ionicActionSheet,popupServices){ 
+.controller("desActividadCtrl",function($scope,$state,$http,$ionicModal ,ServicesPhoto,gpsServices,$timeout,$ionicActionSheet,popupServices){ 
   $scope.showLoaderActi = true;
   var dataActi = JSON.parse(localStorage.getItem('dataActividad'));
   console.log(dataActi);
@@ -1768,11 +1837,11 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
   $scope.finalizarActi = function(){
     var popConfirm = popupServices.confirmPop('Confirmación !' , 'Esta apunto de finalizar esta actividad , desear continuar ?').then(function(resP){
       if (resP) {
+        gpsServices.saveSegTecn(urlNaturale,dataActi.nu_regi,'FinalizaActividad');
         var popLoad = popupServices.loaderPop('Finalizando . .');
         gpsServices.getCurrentPosition().then(function(res){
           $scope.paramsActi.st_devo = $scope.listCheckBox[idAux].des2;
-          $scope.paramsActi.ubic = res.lat + '|' + res.lon;
-          console.log($scope.paramsActi)
+          $scope.paramsActi.ubic = res.lat + '|' + res.lon;          
           $http({url : urlNaturale +  'FinalizarActi',
            method: 'GET',
            params: $scope.paramsActi
@@ -1794,15 +1863,85 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
 
 
   }
+  $scope.zoomMin = 1;
+  $scope.showImages = function(index) {   
+      $scope.activeSlide = index;
+      $scope.showModal('templates/ZoomImage/adm-galleryzoom.html');
+  };
+  $scope.showImagesVisto = function(index) {
+      $scope.activeSlide = index;
+      $scope.showModal('templates/ZoomImage/adm-galleryzoomFirma.html');
+  };
+  $scope.showModal = function(templateUrl) {
+      $ionicModal.fromTemplateUrl(templateUrl, {
+        scope: $scope
+      }).then(function(modal) {
+        $scope.modalImage = modal;
+        $scope.modalImage.show();
+      });
+    }
+     
+  $scope.closeModalImage = function() {
+      $scope.modalImage.hide();
+      $scope.modalImage.remove()
+  };    
+  //$scope.listFotos = [{url_FotoDet : 'https://scontent.flim1-2.fna.fbcdn.net/v/t1.0-1/p50x50/18119325_10211580768947364_2974463703718203254_n.jpg?oh=847a4077abac510b28cf3014f26f4db9&oe=59AD2F7B'},{url_FotoDet : 'https://scontent.flim1-2.fna.fbcdn.net/v/t1.0-1/c0.10.40.40/p40x40/14089022_1268854356492267_4461321948972249509_n.jpg?oh=6026c0489c45ad74e72ca9e7e89c1ec3&oe=59E8A6F9'},{}];
+  $scope.listFotos = [];
   $scope.takePhoto = function(){
+    
     ServicesPhoto.callCamera(1).then(function(resCam){
+      // ALGORITMO PARA GENERAR EL CORRELATIVO DE FOTOS TOMADAS
+      var nroFoto = 0;
+      var cant = $scope.listFotos.length;
+      if (cant == 0) {
+        nroFoto = 1;
+      }else{
+        nroFoto = $scope.listFotos[cant - 1].nombre_FotoDet.replace('.jpg','').split('_');
+        nroFoto = parseInt(nroFoto[2]) + 1;
+      }      
+      //            
+      $scope.showLoaderFoto = true;
       var uri = "data:image/jpeg;base64," + resCam;
-      alert(uri)
-      ServicesPhoto.transferPhoto(urlNaturale,"prueba.jpg",uri).then(function(){
-        alert('success')
+      var nameFoto = String(dataActi.nu_regi) + '_' + getDateHoyCod() + '_' + nroFoto + '.jpg';      
+      ServicesPhoto.savePhotoFolder(uri,nameFoto).then(function(resFolder){
+        gpsServices.saveSegTecn(urlNaturale,dataActi.nu_regi,'Toma Foto');
+        $timeout(function(){
+          $scope.showLoaderFoto = false;          
+          var paramsSaveFoto = {
+            id_Registro : 0,
+            nombre_FotoDet : nameFoto,          
+            url_FotoDet : resFolder.nativeURL,                    
+          }          
+          $scope.listFotos.push({
+            id_Registro : paramsSaveFoto.id_Registro,
+            nombre_FotoDet : paramsSaveFoto.nombre_FotoDet,          
+            url_FotoDet : paramsSaveFoto.url_FotoDet          
+          });          
+        },1000)    
+
+        /*sqliteServices.savetbl_Movil_Obras_Liquida_Foto(paramsSaveFoto).then(function(res){
+          
+          $timeout(function(){
+            $scope.showLoaderFoto = false;
+            $scope.listFotos.push({
+              id_Registro : paramsSaveFoto.id_Registro,
+              nombre_FotoDet : paramsSaveFoto.nombre_FotoDet,
+              obs_FotoDet : coment,
+              url_FotoDet : paramsSaveFoto.url_FotoDet,
+              fechaRegistroMovil_FotoDet : paramsSaveFoto.fechaRegistroMovil,
+              cod_ref : paramsSaveFoto.idGeneral
+            });
+            $scope.paramsFoto = {coment : ''};
+          },1200)
+
+        },function(err){
+          
+        }) */     
       },function(err){
-        alert(JSON.stringify(err))
+        alert(JSON.stringify(err));
       })
+    },function(err){
+      alert(JSON.stringify(err));
     })
-  }
+  };   
 })

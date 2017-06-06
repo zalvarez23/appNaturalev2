@@ -11,7 +11,30 @@ angular.module('starter', ['ionic','ngCordova', 'starter.controllers', 'starter.
   'starter.ServicesPhoto',
   'starter.popupServices'])
 
-
+.run(function($ionicPlatform,$cordovaFile){
+  $ionicPlatform.ready(function() {
+    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
+    // for form inputs)
+    if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
+      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+      cordova.plugins.Keyboard.disableScroll(true);      
+      $cordovaFile.createDir(cordova.file.externalRootDirectory, "PHOTOPROCA", false)
+      .then(function (success) {
+       //alert(JSON.stringify(success));
+      }, function (error) {
+        //alert(JSON.stringify(error));
+      });      
+    }
+    if (window.StatusBar) {
+      // org.apache.cordova.statusbar required
+       StatusBar.show();
+       StatusBar.overlaysWebView(false);
+       StatusBar.styleLightContent();
+       StatusBar.backgroundColorByHexString("#33cd5f");
+    }
+    db= window.openDatabase("dbProca.db", '1', 'my', 1024 * 1024 * 100);       
+  });
+})
 .config(function($stateProvider, $urlRouterProvider,$ionicConfigProvider) {
 $ionicConfigProvider.tabs.position('bottom');
   // Ionic uses AngularUI Router which uses the concept of states

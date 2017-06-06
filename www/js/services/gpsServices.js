@@ -3,7 +3,20 @@ angular.module('starter.gpsServices', [])
 .factory('gpsServices', function($q,$cordovaGeolocation,$http){
 
 	var Result = {};
-
+  var deviceInformation = "";
+  var battery = "";
+  Result.saveDevInformation = function(values){
+    deviceInformation = values;
+  }
+  Result.getDevInformation = function(){
+    return deviceInformation;
+  }
+  Result.saveBatteryDevice = function(values){
+    battery = values;    
+  }
+  Result.getBatteryDevice = function(){
+    return battery;
+  }    
 	Result.getCurrentPosition = function(){
 		var q = $q.defer();
     var posOptions = {timeout: 6000, enableHighAccuracy: false};
@@ -27,6 +40,45 @@ angular.module('starter.gpsServices', [])
 		return q.promise;
 
     }
+  Result.saveSegTecn = function(url,nu_regi,proc){    
+    var url = url + 'InsertSeguimiento';
+    Result.getCurrentPosition().then(function(result){
+      var DataUsuario = JSON.parse(localStorage.getItem('userMich'));   
+      if (DataUsuario != null) { co_usu = DataUsuario.co_usua}
+      var ho_movi = getDateHoraHoyCod();
+        // TRAEMOS INFORMACIÓN DEL DEVICE GUARDADOS EN LA SESION
+      var devInformation = Result.getDevInformation();
+        // TRAEMOS EL PORCENTAJE DE BATERIA
+      var statusBattery = Result.getBatteryDevice();
+      var params = {
+        nu_regi: nu_regi,        
+        lat: result.lat,
+        lon: result.lon,
+        bat: statusBattery,
+        horaMov: ho_movi,
+        marca: devInformation.manufacturer,
+        modelo: devInformation.model,
+        unic: devInformation.serial,
+        //marca : '',
+        //modelo : '',
+        //unic : '',
+        co_usua: co_usu,
+        no_proc: proc,
+        st_regi : 'ACT'
+      }
+      $http({url : url,
+       method: 'GET',
+       params: params
+      }).success(function(data){        
+        console.log(data)
+      })
+      .error(function(err){
+         //var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+      }) 
+    })
+
+  }
+
     var MyVarGps;
     var MyVarCound;
     var countEnviarServidor = 0;
