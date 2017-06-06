@@ -1,6 +1,6 @@
 angular.module('starter.ServicesPhoto', [])
 
-.factory('ServicesPhoto', function ($http,$q,UrlApi,$cordovaCamera,$cordovaFileTransfer,$cordovaFile) {
+.factory('ServicesPhoto', function ($http,$q,$cordovaCamera,$cordovaFileTransfer,$cordovaFile) {
 
 	var Result = {}
 
@@ -62,16 +62,18 @@ angular.module('starter.ServicesPhoto', [])
 		     return q.promise;
 		}
 
-		Result.transferPhoto = function(namePhoto,filePath){
+		Result.transferPhoto = function(url,namePhoto,filePath){
 			var q = $q.defer();
-			var server = UrlApi + '/UploadPhoto?nameFile=' + namePhoto;			
+			var server = url + '/UploadPhoto?nameFile=' + namePhoto;
+			alert(server)			
 			var options = {
 				fileKey: "file",
 	            fileName: namePhoto,
 	            chunkedMode: false,
 	            mimeType: "image/jpg"
 	        };	        	        
-	        $cordovaFileTransfer.upload(server, filePath, options).then(function(result) {	        	
+	        $cordovaFileTransfer.upload(server, filePath, options).then(function(result) {	
+	        alert(JSON.stringify(result))        	
 	        	q.resolve(result)
 	        },function(err){	        	
 	        	

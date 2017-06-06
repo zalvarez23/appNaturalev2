@@ -19,18 +19,18 @@
         </div>
       </div>      
 	  <div class="item-input" >	    
-	    <input type="text" class="borderBottom" ng-model="params.filter" placeholder="Observación . . ">
+	    <input type="text" class="borderBottom" ng-model="paramsActi.obs" placeholder="Observación . . ">
       <i class="icon  placeholder-icon"></i>
       <a class="button button-icon icon ion-chatbubble-working positive"></a>
 	  </div>
     <div class="row">
       <div class="col styleCheck" ng-repeat= "item in listCheckBox">
-        <ion-checkbox ng-model="item.check">{{item.des}}</ion-checkbox>
+        <ion-checkbox ng-model="item.check" ng-click="selectEstado(item.id)">{{item.des}}</ion-checkbox>
       </div>
     </div>
     <div class="row rowButtonSt">
       <div class="col">
-        <a class="item item-icon-left positive buttonSt">
+        <a class="item item-icon-left positive buttonSt" ng-click="takePhoto();">
           <i class="icon ion-social-instagram-outline"></i>
            Tomar Foto
         </a>       
@@ -38,7 +38,7 @@
     </div> 
     <div class="row rowButtonSt">
       <div class="col">
-        <a class="item item-icon-left positive buttonSt">
+        <a class="item item-icon-left positive buttonSt" ng-click="finalizarActi();">
           <i class="icon ion-ios-checkmark-outline"></i>
            Finalizar Actividad
         </a>       

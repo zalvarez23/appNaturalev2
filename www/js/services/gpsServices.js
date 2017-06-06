@@ -1,6 +1,6 @@
 angular.module('starter.gpsServices', [])
 
-.factory('gpsServices', function($q,$cordovaGeolocation,sqliteServices,localStorageServices,UrlApi,$http){
+.factory('gpsServices', function($q,$cordovaGeolocation,$http){
 
 	var Result = {};
 
@@ -10,13 +10,18 @@ angular.module('starter.gpsServices', [])
     $cordovaGeolocation
       .getCurrentPosition(posOptions)
       .then(function (position) {
+        
         objPosition = {
           lat : position.coords.latitude,
-          long : position.coords.longitude
+          lon : position.coords.longitude
         }
         q.resolve(objPosition);
       }, function(err) {
-        q.reject(err)
+        objPosition = {
+          lat : 0,
+          lon : 0
+        }
+        q.resolve(objPosition);
     });
 
 		return q.promise;

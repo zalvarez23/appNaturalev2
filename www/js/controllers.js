@@ -1558,7 +1558,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     }
 })
 
-.controller("actividadesCtrl",function($scope,$http,$timeout,$ionicActionSheet,popupServices,$state){
+.controller("actividadesCtrl",function($scope,$http,gpsServices,$timeout,$ionicActionSheet,popupServices,$state){
   $scope.actividadMult = false;
   var listActividadesInit = [];  
   $scope.paramsMult = {
@@ -1589,7 +1589,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           method: 'GET',
           params: $scope.params
          }).success(function(data){
-            $scope.listActividades = data;            
+            $scope.listActividades = data; 
             $timeout(function(){              
               $scope.showLoaderActi = false;              
               $scope.$broadcast('scroll.refreshComplete');
@@ -1662,7 +1662,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           idRegis += listActividadesInit[i] + ",";          
         }
          idRegis = idRegis.substring(0,idRegis.length-1);
-        var params = {nu_regi : idRegis, st_desp : 'Iniciado'}
+        var params = {nu_regi : idRegis, st_desp : 'Iniciado', co_usua : usunick, ubic : ''}
         $http({url : urlNaturale +  'UpdateStActividadesDevo',
          method: 'GET',
          params: params
@@ -1687,36 +1687,48 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
    $scope.initActivities = function(item){
       popupServices.confirmPop('Confirmación !' , 'Esta apunto de iniciar esta actividad , desear continuar ?').then(function(res){
         if (res) {
-          var params = {nu_regi : item.nu_regi, st_desp : 'Iniciado'}
-           var loaPop = popupServices.loaderPop('Iniciando Actividad');
-           $http({url : urlNaturale +  'UpdateStActividadesDevo',
-            method: 'GET',
-            params: params
-           }).success(function(data){              
-              $timeout(function(){
-                localStorage.setItem('dataActividad',JSON.stringify(item));
+          gpsServices.getCurrentPosition().then(function(resu){
+            var params = {nu_regi : item.nu_regi, st_desp : 'Iniciado', co_usua : "TS1", ubic : resu.lat + '|' + resu.lon}
+
+             var loaPop = popupServices.loaderPop('Iniciando Actividad');
+             $http({url : urlNaturale +  'UpdateStActividadesDevo',
+              method: 'GET',
+              params: params
+             }).success(function(data){              
+                $timeout(function(){
+                  localStorage.setItem('dataActividad',JSON.stringify(item));
+                  loaPop.close();
+                  $state.go('master.desActividades',{tip : 1});
+                },1000)
+             })
+             .error(function(err){
                 loaPop.close();
-                $state.go('master.desActividades',{tip : 1});
-              },1000)
-           })
-           .error(function(err){
-              loaPop.close();
-              var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
-           })
+                var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+             })            
+          })
+
         }
       })      
    }
   
 })
-.controller("desActividadCtrl",function($scope,$http,$timeout,$ionicActionSheet,popupServices,$state){ 
+.controller("desActividadCtrl",function($scope,$state,$http,ServicesPhoto,gpsServices,$timeout,$ionicActionSheet,popupServices){ 
   $scope.showLoaderActi = true;
-  
   var dataActi = JSON.parse(localStorage.getItem('dataActividad'));
   console.log(dataActi);
+  $scope.paramsActi = {
+    nu_regi : dataActi.nu_regi,
+    obs : '',
+    st_devo : '',
+    //co_usua : usunick,
+    co_usua : 'TS1',
+    ubic : ''
+  }
+  var idAux = 0;
   $scope.listCheckBox = [
-    {id : 0, check : true, des : 'Dev'},
-    {id : 1, check : false, des : 'Quie'},
-    {id : 2, check : false, des : 'Aux'},
+    {id : 0, check : true, des : 'Dev', des2 : 'DE'},
+    {id : 1, check : false, des : 'Quie', des2 : 'QU'},
+    {id : 2, check : false, des : 'Aux', des2 : 'AU'},
   ]
   $scope.goHome = function(){
     $state.go("master.menu");
@@ -1744,5 +1756,53 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     .error(function(err){
        var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
     })    
+  }
+  $scope.selectEstado = function(id){
+    idAux = id;
+    $scope.listCheckBox.forEach(function(item,index){
+      if (item.id != id) {
+        item.check = false;
+      };
+    })
+  }
+  $scope.finalizarActi = function(){
+    var popConfirm = popupServices.confirmPop('Confirmación !' , 'Esta apunto de finalizar esta actividad , desear continuar ?').then(function(resP){
+      if (resP) {
+        var popLoad = popupServices.loaderPop('Finalizando . .');
+        gpsServices.getCurrentPosition().then(function(res){
+          $scope.paramsActi.st_devo = $scope.listCheckBox[idAux].des2;
+          $scope.paramsActi.ubic = res.lat + '|' + res.lon;
+          console.log($scope.paramsActi)
+          $http({url : urlNaturale +  'FinalizarActi',
+           method: 'GET',
+           params: $scope.paramsActi
+          }).success(function(data){
+            $timeout(function(){
+              popLoad.close();
+              var popAlert = popupServices.alertPop('Actividad Finalizada !','Proceso realizado correctamente !');        
+              popAlert.then(function(){
+                $state.go('master.actividades');
+              })
+            },700)
+          })
+          .error(function(err){
+             var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+          }) 
+        })        
+      };
+    })
+
+
+  }
+  $scope.takePhoto = function(){
+    ServicesPhoto.callCamera(1).then(function(resCam){
+      var uri = "data:image/jpeg;base64," + resCam;
+      alert(uri)
+      ServicesPhoto.transferPhoto(urlNaturale,"prueba.jpg",uri).then(function(){
+        alert('success')
+      },function(err){
+        alert(JSON.stringify(err))
+      })
+    })
   }
 })
