@@ -3,7 +3,8 @@
 //var urlNaturale = "http://200.110.43.43/ContentServicesNaturale.asmx/";
 //var urlNaturale = "http://192.168.0.17:8056/ContentServicesNaturale.asmx/";
 var urlNaturale = "http://192.168.0.12:8056/ContentServicesNaturale.asmx/";
-
+var urlPhoto = "http://192.168.0.12:8089/api";
+//var urlPhoto = "http://www.naturale.com.pe/webapifoto/api";
 //
   var getDateHoyCod = function(){
     var hoy = new Date();
@@ -1609,7 +1610,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     }
 })
 
-.controller("actividadesCtrl",function($scope,$http,gpsServices,$timeout,$ionicActionSheet,popupServices,$state){
+.controller("actividadesCtrl",function($scope,$http,gpsServices,$stateParams,$timeout,$ionicActionSheet,popupServices,$state){
   $scope.actividadMult = false;
   var listActividadesInit = [];  
   $scope.paramsMult = {
@@ -1636,8 +1637,8 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     if (tip == 1) {
       $scope.showLoaderActi = true;
     }
-    //$scope.params.fecha = txtFecha.value;
-    
+   // $scope.params.fecha = txtFecha.value;
+    console.log($scope.params)
     $http({url : urlNaturale +  'LitaActividadesDevoluciones',
           method: 'GET',
           params: $scope.params
@@ -1646,8 +1647,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
             $timeout(function(){              
               $scope.showLoaderActi = false;              
               $scope.$broadcast('scroll.refreshComplete');
-            },1)                        
-          
+            },1)
          })    
   }
   $scope.goHome = function(){
@@ -1723,7 +1723,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           nu_regi : idRegis,
           st_desp : 'Iniciado',
           //co_usua : usunick,
-          co_usua : "TS1",
+          co_usua : "M1",
           ubic : ''
         }
         $http({url : urlNaturale +  'UpdateStActividadesDevo',
@@ -1754,11 +1754,11 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
             var params = {
               nu_regi : item.nu_regi,
               st_desp : 'Iniciado',
-              co_usua : "TS1",
+              co_usua : "M1",
               //co_usua : usunick,
               ubic : resu.lat + '|' + resu.lon
             }
-
+            console.log(params)
              var loaPop = popupServices.loaderPop('Iniciando Actividad');
              $http({url : urlNaturale +  'UpdateStActividadesDevo',
               method: 'GET',
@@ -1781,16 +1781,17 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
    }
   
 })
-.controller("desActividadCtrl",function($scope,$state,$http,$ionicModal ,ServicesPhoto,gpsServices,$timeout,$ionicActionSheet,popupServices){ 
+.controller("desActividadCtrl",function($scope,$ionicPopup,$state,$http,$q,$stateParams,$ionicModal ,ServicesPhoto,gpsServices,$timeout,$ionicActionSheet,popupServices){ 
   $scope.showLoaderActi = true;
   var dataActi = JSON.parse(localStorage.getItem('dataActividad'));
+  var dataLotes;
   console.log(dataActi);
   $scope.paramsActi = {
     nu_regi : dataActi.nu_regi,
     obs : '',
     st_devo : '',
     //co_usua : usunick,
-    co_usua : 'TS1',
+    co_usua : 'M1',
     ubic : ''
   }
   var idAux = 0;
@@ -1803,10 +1804,56 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     $state.go("master.menu");
   }
   $scope.initView = function(){
-    $scope.getProducActi();
-    $timeout(function(){
-      $scope.showLoaderActi = false;
-    },100)
+    var tipo = $stateParams.tip;       
+    $scope.getProducActi().then(function(dataPro){
+      $scope.listProductos = dataPro;
+      $scope.getLotes().then(function(dataLot){
+        dataLotes = dataLot;
+        // SI EL TIPO ES 1 : INICIO POR PRIMERA VEZ LA ACTIVIDAD
+        // SI EL TIPO ES 2 : INICIO POR SEGUNDA VEZ LA ACTIVIDAD, por lo tanto
+          // traera los datos que se ha nregistrado (FOTOS , LOTES)
+        if (tipo == 2) {
+          $scope.getFotos().then(function(res){
+            $scope.listFotos = res;
+            $timeout(function(){
+            $scope.showLoaderActi = false;
+            },100)          
+          })         
+        }else{
+          $timeout(function(){
+            $scope.showLoaderActi = false;
+          },100)        
+        }        
+      })
+    });
+  }
+  $scope.getLotes = function(){
+    var q = $q.defer();      
+    $http({url : urlNaturale +  'ListaLotesActi',
+     method: 'GET',     
+    }).success(function(data){              
+      q.resolve(data);
+    })
+    .error(function(err){
+      q.reject('err');
+       var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+    })     
+    return q.promise;
+  }  
+  $scope.getFotos = function(){
+    var q = $q.defer();
+    var params = {nu_regi : dataActi.nu_regi};    
+    $http({url : urlNaturale +  'ListaFotosActi',
+     method: 'GET',
+     params: params
+    }).success(function(data){              
+      q.resolve(data);
+    })
+    .error(function(err){
+      q.reject('err');
+       var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+    })     
+    return q.promise;
   }
   $scope.getActividades = function(tip){    
     if (tip == 1) {
@@ -1814,17 +1861,19 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     }
   }
   $scope.getProducActi = function(){
+    var q = $q.defer();
     var params = {id_fact : dataActi.indice};
     $http({url : urlNaturale +  'ListaProductosActi',
      method: 'GET',
      params: params
-    }).success(function(data){              
-      $scope.listProductos = data;
-      console.log(data)
+    }).success(function(data){      
+      q.resolve(data);      
     })
     .error(function(err){
+      q.reject('err');
        var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
     })    
+    return q.promise;
   }
   $scope.selectEstado = function(id){
     idAux = id;
@@ -1846,6 +1895,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
            method: 'GET',
            params: $scope.paramsActi
           }).success(function(data){
+            deleteFoto();
             $timeout(function(){
               popLoad.close();
               var popAlert = popupServices.alertPop('Actividad Finalizada !','Proceso realizado correctamente !');        
@@ -1855,12 +1905,12 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
             },700)
           })
           .error(function(err){
+            popLoad.close();
              var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
           }) 
         })        
       };
     })
-
 
   }
   $scope.zoomMin = 1;
@@ -1905,20 +1955,28 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
       var nameFoto = String(dataActi.nu_regi) + '_' + getDateHoyCod() + '_' + nroFoto + '.jpg';      
       ServicesPhoto.savePhotoFolder(uri,nameFoto).then(function(resFolder){
         gpsServices.saveSegTecn(urlNaturale,dataActi.nu_regi,'Toma Foto');
-        $timeout(function(){
-          $scope.showLoaderFoto = false;          
-          var paramsSaveFoto = {
-            id_Registro : 0,
-            nombre_FotoDet : nameFoto,          
-            url_FotoDet : resFolder.nativeURL,                    
-          }          
-          $scope.listFotos.push({
-            id_Registro : paramsSaveFoto.id_Registro,
-            nombre_FotoDet : paramsSaveFoto.nombre_FotoDet,          
-            url_FotoDet : paramsSaveFoto.url_FotoDet          
-          });          
-        },1000)    
+          ServicesPhoto.transferPhoto(urlPhoto,nameFoto,resFolder.nativeURL).then(function(resUp){
+            insertFotoAct(nameFoto,resFolder.nativeURL).then(function(){
+              $timeout(function(){
+                $scope.showLoaderFoto = false;          
+                var paramsSaveFoto = {
+                  id_Registro : 0,
+                  nombre_FotoDet : nameFoto,          
+                  url_FotoDet : resFolder.nativeURL,
+                }
+                $scope.listFotos.push({
+                  id_Registro : paramsSaveFoto.id_Registro,
+                  nombre_FotoDet : paramsSaveFoto.nombre_FotoDet,          
+                  url_FotoDet : paramsSaveFoto.url_FotoDet          
+                });
+              },1000)
+            },function(){
+              var pop = popupServices.alertPop('Error al registrar Foto !','Error con la conexión !'); 
+            })           
 
+          },function(err){
+              var pop = popupServices.alertPop('Error al subir foto !','Error con la conexión !'); 
+          })
         /*sqliteServices.savetbl_Movil_Obras_Liquida_Foto(paramsSaveFoto).then(function(res){
           
           $timeout(function(){
@@ -1943,5 +2001,116 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     },function(err){
       alert(JSON.stringify(err));
     })
-  };   
+  };
+  var deleteFoto = function(){
+    $scope.listFotos.forEach(function(item,index){
+      ServicesPhoto.deletePhotoFolder(item.nombre_FotoDet).then(function(res){        
+      })
+    })
+  }
+  var insertFotoAct = function(noFoto,ubic){
+    var q = $q.defer();    
+    var params = {
+      nu_regi : dataActi.nu_regi,
+      no_foto : noFoto,
+      ti_foto : 'CAM',
+      co_ubic_foto : ubic,
+      //co_usua : usunick,
+      co_usua : 'TS1'
+    }    
+    $http({url : urlNaturale +  'InsertFotoActividad',
+      method: 'GET',
+      params: params
+    }).success(function(data){
+      q.resolve(data);
+    }).error(function(err){
+      q.reject(err);
+    }) 
+    return q.promise;
+  }
+  var alertPop,alertCant,itemProducto;
+  $scope.modalSelect = function(itemProduct){
+    var cabecera,template;
+    if (dataLotes.length == 0) {
+      var pop = popupServices.alertPop('Error al traer lotes!','No se encontro ningun lote .!'); 
+      return;
+    }
+    itemProducto = itemProduct;
+    $scope.listLotes = dataLotes;
+    template = '<div class="bar bar-header item-input-inset" style="position: absolute;top: 10px;    padding-top: 20px;">' +
+                   '<label class="item-input-wrapper" style="background-color: white;">' +
+                     '<i class="icon ion-ios-search placeholder-icon"></i>' +
+                     '<input type="search" ng-model="searchMedidor" placeholder="Busqueda . ."></label>' +
+                   '</div>' +
+             '<div class="modalStyle" style="max-height: 400px;    padding-top: 30px;">' +
+             '<div ng-repeat="item in listLotes | filter : searchMedidor" class="card-panel grey lighten-5 z-depth-1 cardP  {{item.claseA}}" >' +
+                   '<div class="row valign-wrapper contentPlantilla" ng-click="selectId(item);">' +
+                   '<div class="col s4 m2 colP">' +
+                       '<a href=""><i class="small material-icons" style="font-size:20px !important"></i></a>' +
+                   '</div><div class="col s8 m10"><span class="black-text">Nro Lote: {{item.nu_lote}}</span>' +
+                   '</div><br><span class="black-text">Cant: {{item.nu_cant_desp}}</span>' +
+                   '</div></div></div></div>';
+    alertPop = popupServices.alertPop(cabecera,template,'',$scope);
+  }
+  $scope.modalCant = function(itemLote){    
+    $scope.data = {};
+    $scope.text = {
+      cantidad : ''
+    };
+    var popCant = $ionicPopup.show({
+      template: '<input type="tel" id="txtcantidad" ng-model="data.cantidad">',
+      title: 'Ingresar Cantidad',      
+      scope: $scope,
+      buttons: [
+        { text: 'Cancel' },
+        {
+          text: '<b>Save</b>',
+          type: 'button-positive',
+          onTap: function(e) {
+            if (!$scope.data.cantidad){
+              e.preventDefault();
+            } else {
+              var paramsLote = {
+                i_producto : itemProducto.I_PRODUCTO,
+                co_lote_desp : itemLote.co_lote_desp,
+                cantidadIng : $scope.data.cantidad,
+                id_fact : itemProducto.ID_FACT
+              }
+              var paramsL = JSON.stringify(paramsLote);
+              $scope.updateLotes(paramsL).then(function(res){
+                console.log(res);
+              },function(err){
+                var pop = popupServices.alertPop('Ocurrio un error !','Error con la conexión !'); 
+              })              
+              
+            }
+          }
+        }
+      ]
+    })
+    $timeout(function(){
+      var cantidad = document.getElementById('txtcantidad');
+      cantidad.focus();      
+    },200)
+
+  }
+  $scope.selectId = function(itemLote){
+    alertPop.close();
+    $scope.modalCant(itemLote);
+  }
+  $scope.updateLotes = function(paramsLote){
+    var q = $q.defer();
+    var params = {nu_regi : dataActi.nu_regi,paramsLote : paramsLote};    
+    $http({url : urlNaturale +  'UpdateLoteActi',
+     method: 'GET',
+     params: params
+    }).success(function(data){              
+      q.resolve(data);
+    })
+    .error(function(err){
+      q.reject('err');       
+    })     
+    return q.promise;
+  }  
+
 })

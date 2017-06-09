@@ -12,7 +12,7 @@
     </div> 
     <div ng-show="!showLoaderActi">
       <div ng-repeat="item in listProductos"  class="list card cardKevin {{item.st_desp}}" ng-show="!showLoaderActi">
-        <div class="item item-icon-right " ng-click="showOptions(item,paramsMult.activate)" style="{{item.fondo}}">
+        <div class="item item-icon-right " ng-click="modalSelect(item)" style="{{item.fondo}}">
          <i class="icon ion-ios-arrow-right"></i>
           <h2>Producto : {{item.PRODUCTO}}</h2>
           <p>Cantidad : {{item.CANTIDAD}}</p>      

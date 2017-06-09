@@ -63,8 +63,8 @@ angular.module('starter.ServicesPhoto', [])
 		}
 
 		Result.transferPhoto = function(url,namePhoto,filePath){
-			var q = $q.defer();
-			var server = url + '/UploadPhoto?nameFile=' + namePhoto;			
+			var q = $q.defer();			
+			var server = url + '/UploadFiles?nameFile=' + namePhoto;	        
 			var options = {
 				fileKey: "file",
 	            fileName: namePhoto,
