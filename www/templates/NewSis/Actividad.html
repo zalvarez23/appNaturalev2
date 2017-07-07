@@ -12,10 +12,11 @@
     </div> 
     <div ng-show="!showLoaderActi">
       <div ng-repeat="item in listProductos"  class="list card cardKevin {{item.st_desp}}" ng-show="!showLoaderActi">
-        <div class="item item-icon-right " ng-click="modalSelect(item)" style="{{item.fondo}}">
+        <div class="item item-icon-right " ng-click="showOptionsLotes(item)" style="{{item.fondo}}">
          <i class="icon ion-ios-arrow-right"></i>
           <h2>Producto : {{item.PRODUCTO}}</h2>
-          <p>Cantidad : {{item.CANTIDAD}}</p>      
+          <p>Cantidad : {{item.CANTIDAD}}</p>
+          <p style="color:red">Lotes registrados : {{item.lotes}}</p>
         </div>
       </div>      
 	  <div class="item-input" >	    
@@ -23,12 +24,15 @@
       <i class="icon  placeholder-icon"></i>
       <a class="button button-icon icon ion-chatbubble-working positive"></a>
 	  </div>
-    <div class="row">
-      <div class="col styleCheck" ng-repeat= "item in listCheckBox">
-        <ion-checkbox ng-model="item.check" ng-click="selectEstado(item.id)">{{item.des}}</ion-checkbox>
-      </div>
-    </div>
-    <div class="row rowButtonSt">
+    <div class="item item-input">
+        <input class="col" type="text" disabled ng-model="estadoAux.des" placeholder="Descripción . . " style="color:#868383;" >
+         <a class="item item-icon-left positive buttonSt buttonCliente" ng-click="serachEstado()">
+         <i class="icon ion-android-search sizeIcon25"></i>
+      </a>   
+     </div> 
+     <br>
+
+    <div class="row rowButtonSt" ng-if="showEvents">
       <div class="col">
         <a class="item item-icon-left positive buttonSt" ng-click="takePhoto();">
           <i class="icon ion-social-instagram-outline"></i>
@@ -48,7 +52,7 @@
         <i class="icon ion-trash-b" ng-click="deletePhoto(item)"></i>                  
       </a>
     </div>     
-    <div class="row rowButtonSt">
+    <div class="row rowButtonSt" ng-if="showEvents">
       <div class="col">
         <a class="item item-icon-left positive buttonSt" ng-click="finalizarActi();">
           <i class="icon ion-ios-checkmark-outline"></i>
@@ -59,5 +63,23 @@
   </div>
   <ion-infinite-scroll on-infinite="getMoreClientes()" ng-if="hasMoreData" distance="0%">
   </ion-infinite-scroll>
+    <script id="lotes.html" type="text/ng-template">
+ <ion-modal-view>
+    <ion-header-bar class="bar-dsige"  ng-click="closeModalReport()">
+       <i class="ion-ios-arrow-left" style="font-size: 30px;margin-left: 10px;"></i>       
+      <h1 class="title">Lista de Lotes</h1>
+    </ion-header-bar>
+    <ion-content padding="true">
+    <br>
+      <div ng-repeat="item in listLotesAux"  class="list card cardKevin {{item.st_desp}}" ng-show="!showLoaderActi">
+        <div class="item item-icon-right " style="{{item.fondo}}">
+         <i class="icon ion-ios-arrow-right"></i>
+          <h2>Nro de Lote : {{item.co_lote_desp}}</h2>
+          <p>Cantidad : {{item.cantidadIng}}</p>
+        </div>
+      </div> 
+     </ion-content>
+  </ion-modal-view>
+</script>  
     </ion-content>   
 </ion-view>

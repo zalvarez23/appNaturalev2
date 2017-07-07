@@ -141,7 +141,7 @@ $ionicConfigProvider.tabs.position('bottom');
   }) 
 
   .state('master.actividades',{
-    url : '/actividades',
+    url : '/actividades/:tipo',
     cache : false,
     views: {
       'viewComercial':{
@@ -152,7 +152,7 @@ $ionicConfigProvider.tabs.position('bottom');
   })   
  
   .state('master.desActividades',{
-    url : '/actividades/:tip',
+    url : '/actividadesdet/:tip',
     cache : false,
     views: {
       'viewComercial':{
