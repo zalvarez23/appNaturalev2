@@ -55,6 +55,7 @@ angular.module('starter.gpsServices', [])
         lat: result.lat,
         lon: result.lon,
         bat: statusBattery,
+        //bat: '',
         horaMov: ho_movi,
         marca: devInformation.manufacturer,
         modelo: devInformation.model,

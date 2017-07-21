@@ -64,17 +64,18 @@ angular.module('starter.ServicesPhoto', [])
 
 		Result.transferPhoto = function(url,namePhoto,filePath){
 			var q = $q.defer();			
-			var server = url + '/UploadFiles?nameFile=' + namePhoto;	        
+			//var server = url + '/UploadFiles?nameFile=' + namePhoto;
+			var server = 'http://peruvending.com/naturale/adm/uploader2.php';
 			var options = {
 				fileKey: "file",
 	            fileName: namePhoto,
 	            chunkedMode: false,
 	            mimeType: "image/jpg"
-	        };	        	        
-	        $cordovaFileTransfer.upload(server, filePath, options).then(function(result) {		        
+	        };	        
+	        $cordovaFileTransfer.upload(server, filePath, options).then(function(result) {	        	
 	        	q.resolve(result)
-	        },function(err){	        	
-	        	
+	        },function(err){	
+	        alert(JSON.stringify(err))        		        		        	
 	        	q.reject(err)
 	        })
 	        return q.promise;

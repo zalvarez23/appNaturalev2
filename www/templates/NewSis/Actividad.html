@@ -31,8 +31,13 @@
       </a>   
      </div> 
      <br>
-
+    <div class="item-input" >     
+      <input type="text" class="borderBottom" id="comentFoto" placeholder="Comentario de Foto . . ">
+      <i class="icon  placeholder-icon"></i>
+      <a class="button button-icon icon ion-chatbubble-working positive"></a>
+    </div>
     <div class="row rowButtonSt" ng-if="showEvents">
+    <!--<div class="row rowButtonSt" >-->
       <div class="col">
         <a class="item item-icon-left positive buttonSt" ng-click="takePhoto();">
           <i class="icon ion-social-instagram-outline"></i>
@@ -48,8 +53,9 @@
       <a class="item item-avatar item-icon-right" ng-repeat = "item in listFotos" >
         <img ng-src="{{item.url_FotoDet}}" ng-click="showImages($index)">
         <h2>Foto # {{$index + 1}}</h2>
-        <p>{{item.nombre_FotoDet}}</p>               
-        <i class="icon ion-trash-b" ng-click="deletePhoto(item)"></i>                  
+        <p>{{item.nombre_FotoDet}}</p>
+        <p>Comentario :{{item.no_come}}</p>
+        <i class="icon ion-edit" ng-click="updateComent(item)"></i>                  
       </a>
     </div>     
     <div class="row rowButtonSt" ng-if="showEvents">

@@ -1,11 +1,11 @@
 
 // VARIABLE RUTA
+// RUTA LREAL http://www.naturale.com.pe/webapifoto/FilesUpload/FotosClientes/106706_20170718152354_1.jpg
 var urlNaturale = "http://200.110.43.43/ContentServicesNaturale.asmx/";
-//var urlNaturale = "http://192.168.0.17:8056/ContentServicesNaturale.asmx/";
-//var urlNaturale = "http://192.168.0.12:8056/ContentServicesNaturale.asmx/";
-//var urlPhoto = "http://192.168.0.12:8089/api";
+//var urlNaturale = "http://192.168.0.13:8056/ContentServicesNaturale.asmx/";
+//var urlPhoto = "http://192.168.0.13:8089/api";
 var urlPhoto = "http://www.naturale.com.pe/webapifoto/api";
-//
+
   var getDateHoyCod = function(){
     var hoy = new Date();
     var dd = hoy.getDate();
@@ -17,7 +17,6 @@ var urlPhoto = "http://www.naturale.com.pe/webapifoto/api";
     if(dd<10) {
         dd='0'+dd
     } 
-
     if(mm<10) {
         mm='0'+mm
     } 
@@ -1625,8 +1624,8 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
   $scope.params = {
     filter : '',
     fecha : '2016-04-10',
-    //co_usua : usunick,
-    co_usua : 'M1',
+    co_usua : usunick,
+    //co_usua : 'M1',
     tipo : tipoAux
   }
   $scope.initView = function(){
@@ -1647,7 +1646,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           method: 'GET',
           params: $scope.params
          }).success(function(data){
-            $scope.listActividades = data; 
+            $scope.listActividades = data;             
             $timeout(function(){              
               $scope.showLoaderActi = false;              
               $scope.$broadcast('scroll.refreshComplete');
@@ -1733,8 +1732,8 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
         var params = {
           nu_regi : idRegis,
           st_desp : 'Iniciado',
-          //co_usua : usunick,
-          co_usua : "M1",
+          co_usua : usunick,
+          //co_usua : "M1",
           ubic : ''
         }
         $http({url : urlNaturale +  'UpdateStActividadesDevo',
@@ -1765,8 +1764,8 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
             var params = {
               nu_regi : item.nu_regi,
               st_desp : 'Iniciado',
-              co_usua : "M1",
-              //co_usua : usunick,
+              //co_usua : "M1",
+              co_usua : usunick,
               ubic : resu.lat + '|' + resu.lon
             }
             
@@ -1805,8 +1804,8 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     nu_regi : dataActi.nu_regi,
     obs : '',
     st_devo : '',
-    //co_usua : usunick,
-    co_usua : 'M1',
+    co_usua : usunick,
+    //co_usua : 'M1',
     ubic : ''
   }
   var idAux = 0;
@@ -1852,7 +1851,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     var tipo = $stateParams.tip;       
     $scope.getProducActi().then(function(dataPro){
       $scope.listProductos = dataPro;
-      
+
       if (dataActi.paramsLote == null || dataActi.paramsLote == '') {
 
       }else{
@@ -1866,7 +1865,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
         // SI EL TIPO ES 3 : FINALIZADO.
           // traera los datos que se ha nregistrado (FOTOS , LOTES)
         if (tipo == 2) {
-          $scope.getFotos().then(function(res){
+          $scope.getFotos().then(function(res){            
             $scope.listFotos = res;
             $timeout(function(){
             $scope.showLoaderActi = false;
@@ -1874,7 +1873,12 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           })         
         }else if (tipo == 3) {          
           $scope.getFotos().then(function(res){
+            console.log(res)
+            res.forEach(function(item,index){
+              item.url_FotoDet = "http://peruvending.com/naturale/adm/img2/" + item.nombre_FotoDet;
+            })
             $scope.listFotos = res;
+
             $scope.listCheckBox.forEach(function(item){
               if (item.des2 == dataActi.estadoDev) {
                 $scope.estadoAux.des = item.des;
@@ -1994,8 +1998,15 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
   };    
   //$scope.listFotos = [{url_FotoDet : 'https://scontent.flim1-2.fna.fbcdn.net/v/t1.0-1/p50x50/18119325_10211580768947364_2974463703718203254_n.jpg?oh=847a4077abac510b28cf3014f26f4db9&oe=59AD2F7B'},{url_FotoDet : 'https://scontent.flim1-2.fna.fbcdn.net/v/t1.0-1/c0.10.40.40/p40x40/14089022_1268854356492267_4461321948972249509_n.jpg?oh=6026c0489c45ad74e72ca9e7e89c1ec3&oe=59E8A6F9'},{}];
   $scope.listFotos = [];
+  var updateAux = false;
+  var comentAux;
+  var nomFotoAux;
   $scope.takePhoto = function(){
-    
+    if (updateAux) {
+      $scope.updateComentSend();
+      return;
+    }
+    var comentFoto = document.getElementById('comentFoto');    
     ServicesPhoto.callCamera(1).then(function(resCam){
       // ALGORITMO PARA GENERAR EL CORRELATIVO DE FOTOS TOMADAS
       var nroFoto = 0;
@@ -2006,26 +2017,29 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
         nroFoto = $scope.listFotos[cant - 1].nombre_FotoDet.replace('.jpg','').split('_');
         nroFoto = parseInt(nroFoto[2]) + 1;
       }      
-      //            
+      //
       $scope.showLoaderFoto = true;
       var uri = "data:image/jpeg;base64," + resCam;
       var nameFoto = String(dataActi.nu_regi) + '_' + getDateHoyCod() + '_' + nroFoto + '.jpg';      
-      ServicesPhoto.savePhotoFolder(uri,nameFoto).then(function(resFolder){
+      ServicesPhoto.savePhotoFolder(uri,nameFoto).then(function(resFolder){        
         gpsServices.saveSegTecn(urlNaturale,dataActi.nu_regi,'Toma Foto');
-          ServicesPhoto.transferPhoto(urlPhoto,nameFoto,resFolder.nativeURL).then(function(resUp){
-            insertFotoAct(nameFoto,resFolder.nativeURL).then(function(){
+          ServicesPhoto.transferPhoto(urlPhoto,nameFoto,resFolder.nativeURL).then(function(resUp){            
+            insertFotoAct(nameFoto,resFolder.nativeURL,comentFoto.value).then(function(){              
               $timeout(function(){
                 $scope.showLoaderFoto = false;          
                 var paramsSaveFoto = {
                   id_Registro : 0,
                   nombre_FotoDet : nameFoto,          
                   url_FotoDet : resFolder.nativeURL,
+                  no_come : comentFoto.value
                 }
                 $scope.listFotos.push({
                   id_Registro : paramsSaveFoto.id_Registro,
                   nombre_FotoDet : paramsSaveFoto.nombre_FotoDet,          
-                  url_FotoDet : paramsSaveFoto.url_FotoDet          
+                  url_FotoDet : paramsSaveFoto.url_FotoDet,
+                  no_come : comentFoto.value
                 });
+                comentFoto.value = "";
               },1000)
             },function(){
               var pop = popupServices.alertPop('Error al registrar Foto !','Error con la conexión !'); 
@@ -2034,24 +2048,7 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
           },function(err){
               var pop = popupServices.alertPop('Error al subir foto !','Error con la conexión !'); 
           })
-        /*sqliteServices.savetbl_Movil_Obras_Liquida_Foto(paramsSaveFoto).then(function(res){
-          
-          $timeout(function(){
-            $scope.showLoaderFoto = false;
-            $scope.listFotos.push({
-              id_Registro : paramsSaveFoto.id_Registro,
-              nombre_FotoDet : paramsSaveFoto.nombre_FotoDet,
-              obs_FotoDet : coment,
-              url_FotoDet : paramsSaveFoto.url_FotoDet,
-              fechaRegistroMovil_FotoDet : paramsSaveFoto.fechaRegistroMovil,
-              cod_ref : paramsSaveFoto.idGeneral
-            });
-            $scope.paramsFoto = {coment : ''};
-          },1200)
-
-        },function(err){
-          
-        }) */     
+   
       },function(err){
         alert(JSON.stringify(err));
       })
@@ -2065,15 +2062,43 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
       })
     })
   }
-  var insertFotoAct = function(noFoto,ubic){
+  var itemAux;
+  $scope.updateComent = function(item){
+    updateAux = true;
+    comentAux = document.getElementById('comentFoto');
+    comentAux.value = item.no_come;
+    nomFotoAux = item.nombre_FotoDet;
+    itemAux = item;
+  }
+  $scope.updateComentSend = function(){
+    $scope.showLoaderFoto = true;     
+    var params = {
+      no_foto : nomFotoAux,
+      coment : comentAux.value
+    }    
+    $http({url : urlNaturale +  'ActualizarCometnFoto',
+      method: 'GET',
+      params: params
+    }).success(function(data){
+      $scope.showLoaderFoto = false;
+      itemAux.no_come = comentAux.value;
+      comentAux.value = "";
+      updateAux = false;
+    }).error(function(err){
+      $scope.showLoaderFoto = false;
+      console.log(err)
+    }) 
+  }
+  var insertFotoAct = function(noFoto,ubic,coment){
     var q = $q.defer();    
     var params = {
       nu_regi : dataActi.nu_regi,
       no_foto : noFoto,
       ti_foto : 'CAM',
       co_ubic_foto : ubic,
-      //co_usua : usunick,
-      co_usua : 'TS1'
+      co_usua : usunick,
+      no_come : coment
+      //co_usua : 'TS1'
     }    
     $http({url : urlNaturale +  'InsertFotoActividad',
       method: 'GET',
@@ -2151,7 +2176,11 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
                 lotExist.push(paramsLote);
                 paramsL = JSON.stringify(lotExist);
               }
-              $scope.updateLotes(paramsL).then(function(res){
+              var paramsNewL = paramsLote.id_fact + '|' + paramsLote.i_producto + '|' +
+                               paramsLote.co_lote_desp + '|' + paramsLote.cantidadIng + '|' + usunick
+                               //'M1'
+                               
+              $scope.updateLotes(paramsL,paramsNewL).then(function(res){
                 gpsServices.saveSegTecn(urlNaturale,dataActi.nu_regi,'Registro de Lotes');              
                 dataActi.paramsLote = paramsL;                
                 localStorage.setItem('dataActividad',JSON.stringify(dataActi));                
@@ -2190,9 +2219,9 @@ var server = "http://peruvending.com/naturale/adm/uploader2.php"
     idAux = item.id;
     $scope.estadoAux.des = item.des;
   }
-  $scope.updateLotes = function(paramsLote){
+  $scope.updateLotes = function(paramsLote,paramsNewLote){
     var q = $q.defer();
-    var params = {nu_regi : dataActi.nu_regi,paramsLote : paramsLote};    
+    var params = {nu_regi : dataActi.nu_regi,paramsLote : paramsLote,paramsNewLote : paramsNewLote};    
     $http({url : urlNaturale +  'UpdateLoteActi',
      method: 'GET',
      params: params
